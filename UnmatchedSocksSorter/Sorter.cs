@@ -245,5 +245,56 @@ namespace UnmatchedSocksSorter
             Console.WriteLine("Nobody cares about matching socks anyway.");
             return socks;
         }
+
+        public List<Sock> HashSetSort(List<Sock> unmatchedSocks)
+        {
+            Stopwatch watch = new Stopwatch();
+            watch.Start();
+            List<Sock> matchedSocks = new List<Sock>();
+
+            var waitingForMatch = new HashSet<Sock>(new SockEqualityComparer());
+            while (unmatchedSocks.Any())
+            {
+                int index = unmatchedSocks.Count - 1;
+                var sock = unmatchedSocks[index];
+                unmatchedSocks.RemoveAt(index);
+                if (waitingForMatch.Contains(sock))
+                {
+                    matchedSocks.Add(sock);
+                    matchedSocks.Add(sock);
+                    waitingForMatch.Remove(sock);
+                }
+                else
+                {
+                    waitingForMatch.Add(sock);
+                }
+            }
+
+            watch.Stop();
+            Console.WriteLine("Completed HashSet Sort in " + watch.ElapsedMilliseconds.ToString() + " milliseconds.");
+
+            return matchedSocks;
+        }
+
+        public sealed class SockEqualityComparer : IEqualityComparer<Sock>
+        {
+            public bool Equals(Sock x, Sock y)
+            {
+                if (ReferenceEquals(x, y)) return true;
+                if (x is null || y is null) return false;
+                return x.Color == y.Color && x.Owner == y.Owner && x.Length == y.Length;
+            }
+
+            public int GetHashCode(Sock obj)
+            {
+                unchecked
+                {
+                    var hashCode = (int) obj.Color;
+                    hashCode = (hashCode * 397) ^ (int) obj.Owner;
+                    hashCode = (hashCode * 397) ^ (int) obj.Length;
+                    return hashCode;
+                }
+            }
+        }
     }
 }
